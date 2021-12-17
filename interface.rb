@@ -3,6 +3,8 @@
 require_relative 'game'
 
 class Interface
+  attr_reader :game
+
   def greetings
     puts "What's your name?"
     @name = gets.chomp
@@ -18,12 +20,15 @@ class Interface
       case action
       when 1
         open_cards
+        show_winner
         another_round
       when 2
-        @game.dealer.take_card
+        show_player_cards
+        hide_dealer_cards
+        @game.take_card(game.dealer)
       when 3
-        @game.player.take_card
-        @game.dealer.take_card
+        @game.take_card(game.player)
+        @game.take_card(game.dealer) if @game.dealer.hand.less_seventeen_points?
       end
     end
   end
@@ -36,17 +41,46 @@ class Interface
   end
 
   def open_cards
-    puts 'Player cards'
-    @game.player.cards
-    puts @game.player.points
+    show_player_cards
+    show_dealer_cards
+  end
 
-    puts '-' * 50
+  def hide_dealer_cards
+    sep
+    puts 'Dealer Cards'
+    @game.dealer.hand.cards.size.times { puts '**' }
+    sep
+  end
 
-    puts 'Dealer cards'
-    @game.dealer.show_cards
-    puts @game.dealer.points
+  def show_dealer_cards
+    sep
+    puts 'Dealer Cards'
+    @game.dealer.hand.cards.each { |card| puts "#{card.value}#{card.suit}" }
+    puts "Points #{@game.dealer.hand.points}"
+    sep
+  end
 
-    puts @game.victory
+  def show_player_cards
+    sep
+    puts 'Player Cards'
+    @game.player.hand.cards.each { |card| puts "#{card.value}#{card.suit} " }
+    puts "Points #{@game.player.hand.points}"
+    sep
+  end
+
+  def show_winner
+    case @game.victory
+    when :player
+      puts "Congrats #{@game.player.name}! You win!"
+      puts "Bank: #{@game.player.money}"
+    when :dealer
+      puts 'Dealer wins'
+      puts "Bank: #{@game.dealer.money}"
+    when :draw
+      puts 'Draw'
+    when :nobody
+      puts 'Nobody'
+    end
   end
 
   def another_round
@@ -60,5 +94,9 @@ class Interface
     when 'n'
       abort
     end
+  end
+
+  def sep
+    puts '-' * 50
   end
 end

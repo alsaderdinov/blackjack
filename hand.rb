@@ -2,16 +2,13 @@
 
 require_relative 'card'
 require_relative 'player'
+require_relative 'deck'
 
 class Hand
-  attr_reader :cards
+  attr_accessor :cards
 
   def initialize
     @cards = []
-  end
-
-  def take_card
-    @cards << Card.new if less_three_cards?
   end
 
   def less_three_cards?
